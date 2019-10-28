@@ -92,17 +92,10 @@ public class SerializationFilterTest extends TestSerializableFilterAware {
         try {
             filter.filter(Object.class.getName());
             filter.filter(ArrayList[].class.getName());
+            filter.filter("[Lhazelcast.com");
 
         } catch (SecurityException e) {
             fail("Deserialization should not have failed");
-        }
-
-        filter.filter("[Lhazelcast.com");
-        try {
-            filter.filter("[Ltest.com");
-            fail("Deserialization should have failed");
-        } catch (SecurityException e) {
-
         }
     }
 

@@ -17,6 +17,10 @@
 package com.hazelcast.nio;
 
 import com.hazelcast.impl.GroupProperties;
+import com.hazelcast.patch.AlfBlackListClassFilter;
+import com.hazelcast.patch.AlfWhiteListClassFilter;
+import com.hazelcast.patch.ClassNameFilter;
+import com.hazelcast.patch.SerializationClassNameFilter;
 
 import java.io.*;
 import java.math.BigInteger;
@@ -31,6 +35,12 @@ import static com.hazelcast.nio.AbstractSerializer.newInstance;
 import static com.hazelcast.nio.AbstractSerializer.newObjectInputStream;
 
 public class DefaultSerializer implements CustomSerializer {
+
+    private final static ClassNameFilter classFilter = new SerializationClassNameFilter(
+            new AlfBlackListClassFilter(),
+            new AlfWhiteListClassFilter(),
+            true
+    );
 
     private static final byte SERIALIZER_TYPE_OBJECT = 0;
 
@@ -343,6 +353,9 @@ public class DefaultSerializer implements CustomSerializer {
 
         public final Externalizable read(final FastByteArrayInputStream bbis) throws Exception {
             final String className = bbis.readUTF();
+
+            classFilter.filter(className);
+
             try {
                 final Externalizable ds = (Externalizable) newInstance(AbstractSerializer.loadClass(className));
                 ds.readExternal(newObjectInputStream(bbis));

@@ -17,6 +17,7 @@
 package com.hazelcast.nio;
 
 import com.hazelcast.impl.OutOfMemoryErrorDispatcher;
+import com.hazelcast.patch.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,6 +37,7 @@ public abstract class AbstractSerializer {
     private final FastByteArrayInputStream bbis;
     private final Serializer.DataSerializer ds;
     private final CustomSerializerAdapter cs;
+
 
     public AbstractSerializer(Serializer.DataSerializer ds, CustomSerializer cs) {
         this.ds = ds;
@@ -85,12 +87,7 @@ public abstract class AbstractSerializer {
     }
 
     public static ObjectInputStream newObjectInputStream(final InputStream in) throws IOException {
-        return new ObjectInputStream(in) {
-            @Override
-            protected Class<?> resolveClass(final ObjectStreamClass desc) throws ClassNotFoundException {
-                return loadClass(desc.getName());
-            }
-        };
+        return new ClassLoaderAwareObjectInputStream(in);
     }
 
     protected void toByte(final FastByteArrayOutputStream bos, final Object object) {

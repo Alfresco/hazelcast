@@ -1,4 +1,5 @@
 dist: xenial
 sudo: required
 language: java
-jdk: openjdk7
+jdk: 
+  - openjdk7

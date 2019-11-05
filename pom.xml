@@ -205,16 +205,10 @@
     </profiles>
 
     <distributionManagement>
-        <repository>
-            <id>release-repository</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
-        </repository>
-        <snapshotRepository>
-            <id>snapshot-repository</id>
-            <name>Maven2 Snapshot Repository</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-            <uniqueVersion>false</uniqueVersion>
-        </snapshotRepository>
+       <repository>
+	  <id>release-repository</id>
+	      <url>https://artifacts.alfresco.com/nexus/content/repositories/thirdparty</url>
+       </repository>
     </distributionManagement>
 
     <dependencies>

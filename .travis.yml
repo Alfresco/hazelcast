@@ -3,3 +3,5 @@ sudo: required
 language: java
 jdk: 
   - openjdk7
+
+install: travis_retry mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V

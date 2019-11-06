@@ -7,9 +7,8 @@ jdk:
 stages:
   - release
 
-install: true
+install: mvn clean package -DskipTests=true
 
-script: mvn clean package -DskipTests=true
 
 jobs:
     include:

@@ -4,6 +4,24 @@ language: java
 jdk: 
   - openjdk7
 
+stages:
+  - release
+
 install: true
 
 script: mvn clean package -DskipTests=true
+
+jobs:
+    include:
+      -stage: release
+      name: "Push to Nexus"
+      if: fork = false AND (branch = master OR branch =~ /support\/.*/) AND type != pull_request AND commit_message !~ /\[no-release\]/
+      before_install:
+        - "cp .travis.settings.xml $HOME/.m2/settings.xml"
+      script:
+        # Use full history for release
+        - git checkout -B "${TRAVIS_BRANCH}"
+        # Add email to link commits to user
+        - git config user.email "${GIT_EMAIL}"
+        # Skip building of release commits
+        - mvn --batch-mode -q -DscmCommentPrefix="[maven-release-plugin][skip ci] " -Dusername="${GIT_USERNAME}" -Dpassword="${GIT_PASSWORD}" -DskipTests -Darguments=-DskipTests release:clean release:prepare release:perform

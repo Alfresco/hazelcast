@@ -211,13 +211,6 @@
        </repository>
     </distributionManagement>
 
-    <scm>
-        <connection>scm:git:https://github.com/Alfresco/hazelcast.git</connection>
-        <developerConnection>scm:git:https://github.com/Alfresco/hazelcast.git</developerConnection>
-        <url>https://github.com/Alfresco/hazelcast.git</url>
-        <tag>HEAD</tag>
-    </scm>
-    
     <dependencies>
         <dependency>
             <groupId>junit</groupId>

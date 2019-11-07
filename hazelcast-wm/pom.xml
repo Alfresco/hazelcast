@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.hazelcast</groupId>
         <artifactId>hazelcast-root</artifactId>
-        <version>2.4-alfresco-patched-SNAPSHOT</version>
+        <version>2.4-20191107-alfresco-patched-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

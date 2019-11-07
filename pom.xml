@@ -206,10 +206,17 @@
 
     <distributionManagement>
        <repository>
-          <id>alfresco-public</id>
-	  <url>https://artifacts.alfresco.com/nexus/content/repositories/thirdparty</url>
+           <id>alfresco-public</id>
+	       <url>https://artifacts.alfresco.com/nexus/content/repositories/thirdparty</url>
+           <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
        </repository>
     </distributionManagement>
+
 
     <dependencies>
         <dependency>

@@ -7,8 +7,9 @@ jdk:
 stages:
   - release
 
-
-
+branches:
+  only:
+    - 2.4-alfresco-patched
 
 jobs:
     include:

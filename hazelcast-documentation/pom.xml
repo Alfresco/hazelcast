@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.hazelcast</groupId>
         <artifactId>hazelcast-root</artifactId>
-        <version>2.4.1-SNAPSHOT</version>
+        <version>2.4-20191107-alfresco-patched</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -43,8 +42,7 @@
                             <sourceDirectory>${basedir}/src/main/docbook/manual/content</sourceDirectory>
                             <targetDirectory>${project.build.directory}/docbook/pdf</targetDirectory>
                             <postProcess>
-                                <move file="${project.build.directory}/docbook/pdf/index.pdf" failonerror="false"
-                                      tofile="${project.build.directory}/docbook/pdf/hazelcast-documentation.pdf"/>
+                                <move file="${project.build.directory}/docbook/pdf/index.pdf" failonerror="false" tofile="${project.build.directory}/docbook/pdf/hazelcast-documentation.pdf" />
                             </postProcess>
                         </configuration>
                     </execution>
@@ -63,12 +61,12 @@
                             <postProcess>
                                 <copy todir="${project.build.directory}/docbook/single_html/">
                                     <fileset dir="${basedir}/src/main/docbook/manual/stylesheet/">
-                                        <include name="**/*.css"/>
+                                        <include name="**/*.css" />
                                     </fileset>
                                 </copy>
                                 <copy todir="${project.build.directory}/docbook/single_html/images/" flatten="true">
                                     <fileset dir="${basedir}/src/main/docbook/manual/content/">
-                                        <include name="**/images/*.*"/>
+                                        <include name="**/images/*.*" />
                                     </fileset>
                                 </copy>
                             </postProcess>
@@ -88,17 +86,16 @@
                             <targetDirectory>${project.build.directory}/docbook</targetDirectory>
                             <chunkedOutput>true</chunkedOutput>
                             <postProcess>
-                                <move file="${project.build.directory}/docbook/index"
-                                      tofile="${project.build.directory}/docbook/multi_html"/>
+                                <move file="${project.build.directory}/docbook/index" tofile="${project.build.directory}/docbook/multi_html" />
 
                                 <copy todir="${project.build.directory}/docbook/multi_html/">
                                     <fileset dir="${basedir}/src/main/docbook/manual/stylesheet/">
-                                        <include name="**/*.css"/>
+                                        <include name="**/*.css" />
                                     </fileset>
                                 </copy>
                                 <copy todir="${project.build.directory}/docbook/multi_html/images/" flatten="true">
                                     <fileset dir="${basedir}/src/main/docbook/manual/content/">
-                                        <include name="**/images/*.*"/>
+                                        <include name="**/images/*.*" />
                                     </fileset>
                                 </copy>
                             </postProcess>

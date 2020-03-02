@@ -401,4 +401,19 @@
         </client-permissions>
     </security>
 
+    <serialization>
+        <java-serialization-filter>
+            <blacklist>
+                <class>com.acme.app.BeanComparator</class>
+            </blacklist>
+            <whitelist>
+                <class>java.lang.String</class>
+                <class>example.Foo</class>
+                <package>com.acme.app</package>
+                <package>com.acme.app.subpkg</package>
+                <prefix>foo.bar.</prefix>
+            </whitelist>
+        </java-serialization-filter>
+    </serialization>
+
 </hazelcast>

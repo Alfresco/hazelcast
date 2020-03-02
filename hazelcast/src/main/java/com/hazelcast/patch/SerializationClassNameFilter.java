@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2018, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2020, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,9 @@
 
 package com.hazelcast.patch;
 
-import static java.lang.String.format;
+import com.hazelcast.config.JavaSerializationFilterConfig;
 
+import static java.lang.String.format;
 
 /**
  * Implementation of basic protection against untrusted deserialization. It holds blacklist and whitelist with classnames and
@@ -34,12 +35,11 @@ public final class SerializationClassNameFilter implements ClassNameFilter {
     private final ClassFilter whitelist;
     private final boolean useDefaultWhitelist;
 
-    public SerializationClassNameFilter (ClassFilter blacklist, ClassFilter whitelist, boolean useDefaultWhitelist) {
-        Preconditions.checkNotNull(blacklist);
-        Preconditions.checkNotNull(whitelist);
-        this.blacklist = blacklist;
-        this.whitelist = whitelist;
-        this.useDefaultWhitelist = useDefaultWhitelist;
+    public SerializationClassNameFilter(JavaSerializationFilterConfig config) {
+        Preconditions.checkNotNull(config, "JavaSerializationFilterConfig has to be provided");
+        blacklist = config.getBlacklist();
+        whitelist = config.getWhitelist();
+        useDefaultWhitelist = !config.isDefaultsDisabled();
     }
 
     /**
@@ -48,13 +48,13 @@ public final class SerializationClassNameFilter implements ClassNameFilter {
      * @param className class name to check
      * @throws SecurityException if the classname is not allowed for deserialization
      */
-    public void filter (String className) throws SecurityException {
-        if(blacklist.isListed(className)) {
+    public void filter(String className) throws SecurityException {
+        if (blacklist.isListed(className)) {
             throw new SecurityException(format(DESERIALIZATION_ERROR, className));
         }
         // if whitelisting is enabled (either explicit or as a default whitelist), force the whitelist check
-        if(useDefaultWhitelist || !whitelist.isEmpty()) {
-            if(whitelist.isListed(className)
+        if (useDefaultWhitelist || !whitelist.isEmpty()) {
+            if (whitelist.isListed(className)
                     || (useDefaultWhitelist && DEFAULT_WHITELIST.isListed(className))) {
                 return;
             }
@@ -62,20 +62,8 @@ public final class SerializationClassNameFilter implements ClassNameFilter {
         }
     }
 
-    public ClassFilter getBlacklist () {
-       return blacklist;
-    }
-
-    public ClassFilter getWhitelist () {
-        return whitelist;
-    }
-
-    public boolean isUseDefaultWhitelist () {
-        return useDefaultWhitelist;
-    }
-
     static {
         DEFAULT_WHITELIST = new ClassFilter();
-        DEFAULT_WHITELIST.addPrefixes("com.hazelcast.", "java","[" );
+        DEFAULT_WHITELIST.addPrefixes("com.hazelcast.", "java", "[");
     }
 }

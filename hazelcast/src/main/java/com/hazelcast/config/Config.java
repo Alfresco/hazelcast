@@ -83,6 +83,8 @@ public class Config implements DataSerializable {
 
     private ManagementCenterConfig managementCenterConfig = new ManagementCenterConfig();
 
+    private SerializationConfig serializationConfig = new SerializationConfig();
+
     private ManagedContext managedContext;
 
     private String licenseKey;
@@ -926,6 +928,30 @@ public class Config implements DataSerializable {
         return this;
     }
 
+    /**
+     * Returns the serialization configuration for this hazelcast instance. The
+     * serialization configuration defines how objects are serialized and
+     * deserialized on this instance.
+     *
+     * @return the serialization configuration
+     */
+    public SerializationConfig getSerializationConfig() {
+        return serializationConfig;
+    }
+
+    /**
+     * Sets the serialization configuration for this hazelcast instance. The
+     * serialization configuration defines how objects are serialized and
+     * deserialized on this instance.
+     *
+     * @param serializationConfig the serialization configuration
+     * @return this config instance
+     */
+    public Config setSerializationConfig(SerializationConfig serializationConfig) {
+        this.serializationConfig = serializationConfig;
+        return this;
+    }
+
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder();
@@ -947,6 +973,7 @@ public class Config implements DataSerializable {
         sb.append(", partitionGroupConfig=").append(partitionGroupConfig);
         sb.append(", managementCenterConfig=").append(managementCenterConfig);
         sb.append(", securityConfig=").append(securityConfig);
+        sb.append(", serializationConfig=").append(serializationConfig);
         sb.append('}');
         return sb.toString();
     }

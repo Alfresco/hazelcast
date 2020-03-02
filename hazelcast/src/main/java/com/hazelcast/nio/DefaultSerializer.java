@@ -16,10 +16,10 @@
 
 package com.hazelcast.nio;
 
+import com.hazelcast.config.JavaSerializationFilterConfig;
 import com.hazelcast.impl.GroupProperties;
-import com.hazelcast.patch.AlfBlackListClassFilter;
-import com.hazelcast.patch.AlfWhiteListClassFilter;
-import com.hazelcast.patch.ClassNameFilter;
+import com.hazelcast.impl.ThreadContext;
+import com.hazelcast.patch.ClassLoaderAwareObjectInputStream;
 import com.hazelcast.patch.SerializationClassNameFilter;
 
 import java.io.*;
@@ -35,12 +35,6 @@ import static com.hazelcast.nio.AbstractSerializer.newInstance;
 import static com.hazelcast.nio.AbstractSerializer.newObjectInputStream;
 
 public class DefaultSerializer implements CustomSerializer {
-
-    private final static ClassNameFilter classFilter = new SerializationClassNameFilter(
-            new AlfBlackListClassFilter(),
-            new AlfWhiteListClassFilter(),
-            true
-    );
 
     private static final byte SERIALIZER_TYPE_OBJECT = 0;
 
@@ -92,6 +86,7 @@ public class DefaultSerializer implements CustomSerializer {
             return p1 < p2 ? -1 : p1 == p2 ? (o1.getTypeId() - o2.getTypeId()) : 1;
         }
     });
+
 
     private TypeSerializer[] typeSerializer;
 
@@ -352,13 +347,21 @@ public class DefaultSerializer implements CustomSerializer {
         }
 
         public final Externalizable read(final FastByteArrayInputStream bbis) throws Exception {
+
             final String className = bbis.readUTF();
 
-            classFilter.filter(className);
+            JavaSerializationFilterConfig javaSerializationFilterConfig = ThreadContext.get()
+                    .getCurrentFactory()
+                    .getConfig()
+                    .getSerializationConfig()
+                    .getJavaSerializationFilterConfig();
+            new SerializationClassNameFilter(javaSerializationFilterConfig).filter(className);
 
             try {
                 final Externalizable ds = (Externalizable) newInstance(AbstractSerializer.loadClass(className));
-                ds.readExternal(newObjectInputStream(bbis));
+                ObjectInputStream in = newObjectInputStream(bbis);
+
+                ds.readExternal(in);
                 return ds;
             } catch (final Exception e) {
                 throw new IOException("Problem reading Externalizable class : " + className + ", exception: " + e);
@@ -403,7 +406,9 @@ public class DefaultSerializer implements CustomSerializer {
 
         private Object readGZip(final FastByteArrayInputStream bbis) throws Exception {
             final InputStream zis = new BufferedInputStream(new GZIPInputStream(bbis));
+
             final ObjectInputStream in = newObjectInputStream(zis);
+
             Object result;
             if (shared) {
                 result = in.readObject();
@@ -416,6 +421,7 @@ public class DefaultSerializer implements CustomSerializer {
 
         private Object readNormal(final FastByteArrayInputStream bbis) throws Exception {
             final ObjectInputStream in = newObjectInputStream(bbis);
+
             Object result;
             if (shared) {
                 result = in.readObject();

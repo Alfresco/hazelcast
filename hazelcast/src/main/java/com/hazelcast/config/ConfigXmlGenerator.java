@@ -28,10 +28,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 
 public class ConfigXmlGenerator {
@@ -332,6 +329,9 @@ public class ConfigXmlGenerator {
             xml.append("</listeners>");
         }
         xml.append("</hazelcast>");
+
+        appendSerializationSection(xml,config.getSerializationConfig());
+
         return format(xml.toString(), 5);
     }
 
@@ -381,6 +381,49 @@ public class ConfigXmlGenerator {
                         .append("</property>");
             }
             xml.append("</properties>");
+        }
+    }
+
+    @SuppressWarnings({"checkstyle:npathcomplexity"})
+    private void appendSerializationSection(StringBuilder xml, SerializationConfig serializationConfig) {
+
+        JavaSerializationFilterConfig javaSerializationFilterConfig = serializationConfig.getJavaSerializationFilterConfig();
+
+        xml.append("<serialization>");
+
+        xml.append("<java-serialization-filter defaults-disabled=\"");
+        xml.append(javaSerializationFilterConfig.isDefaultsDisabled());
+        xml.append("\">");
+
+        xml.append("<blacklist>");
+
+        appendFilterListElements(xml, "class",javaSerializationFilterConfig.getBlacklist().getClasses());
+        appendFilterListElements(xml, "package", javaSerializationFilterConfig.getBlacklist().getPackages());
+        appendFilterListElements(xml, "prefix", javaSerializationFilterConfig.getBlacklist().getPrefixes());
+
+        xml.append("</blacklist>");
+
+        xml.append("<whitelist>");
+
+        appendFilterListElements(xml, "class", javaSerializationFilterConfig.getWhitelist().getClasses());
+        appendFilterListElements(xml, "package", javaSerializationFilterConfig.getWhitelist().getPackages());
+        appendFilterListElements(xml, "prefix", javaSerializationFilterConfig.getWhitelist().getPrefixes());
+
+        xml.append("</whitelist>");
+
+        xml.append("</java-serialization-filter>");
+        xml.append("</serialization>");
+    }
+
+    private void appendFilterListElements (StringBuilder xml, String tag, Set<String> listElements) {
+        for(String clazzOrPackage: listElements){
+            xml.append("<");
+            xml.append(tag);
+            xml.append(">");
+            xml.append(clazzOrPackage);
+            xml.append("</");
+            xml.append(tag);
+            xml.append(">");
         }
     }
 }

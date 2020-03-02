@@ -23,6 +23,7 @@ import com.hazelcast.config.PermissionConfig.PermissionType;
 import com.hazelcast.impl.Util;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.logging.Logger;
+import com.hazelcast.patch.ClassFilter;
 import org.w3c.dom.*;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -216,6 +217,8 @@ public class XmlConfigBuilder extends AbstractXmlConfigHelper implements ConfigB
                 config.setLicenseKey(getValue(node));
             } else if ("management-center".equals(nodeName)) {
                 handleManagementCenterConfig(node);
+            }else if("serialization".equals(nodeName)){
+                handleSerialization(node);
             }
         }
     }
@@ -1050,4 +1053,47 @@ public class XmlConfigBuilder extends AbstractXmlConfigHelper implements ConfigB
             }
         }
     }
+
+    private void handleSerialization (final org.w3c.dom.Node serializationNode) throws Exception {
+
+        for (org.w3c.dom.Node serializationChild : new IterableNodeList(serializationNode.getChildNodes())) {
+
+            if("java-serialization-filter".equals(cleanNodeName(serializationChild.getNodeName()))) {
+
+                final NamedNodeMap atts = serializationChild.getAttributes();
+                final Node defaultsDisabledAttr = atts.getNamedItem("defaultsDisabled");
+
+                final boolean defaultsDisabled = defaultsDisabledAttr != null ? checkTrue(getTextContent(defaultsDisabledAttr).trim()) : false;
+
+                JavaSerializationFilterConfig javaSerializationFilterConfig = config.getSerializationConfig().getJavaSerializationFilterConfig();
+                javaSerializationFilterConfig.setDefaultsDisabled(defaultsDisabled);
+
+                for (org.w3c.dom.Node child : new IterableNodeList(serializationChild.getChildNodes())) {
+                    final String nodeName = cleanNodeName(child.getNodeName());
+                    if("blacklist".equals(nodeName)) {
+                        handleBlackWhiteList(javaSerializationFilterConfig.getBlacklist(), child);
+                    } else if("whitelist".equals(nodeName)) {
+                        handleBlackWhiteList(javaSerializationFilterConfig.getWhitelist(), child);
+                    }
+                }
+            }
+        }
+    }
+
+    private void handleBlackWhiteList (ClassFilter classFilter, Node blackWhitListNode) {
+        for (org.w3c.dom.Node child : new IterableNodeList(blackWhitListNode.getChildNodes())) {
+            final String childNodeName = cleanNodeName(child.getNodeName());
+            if("class".equals(childNodeName)){
+                classFilter.addClasses(getTextContent(child).trim());
+            }
+            if("package".equals(childNodeName)){
+                classFilter.addPackages(getTextContent(child).trim());
+            }
+            if("prefix".equals(childNodeName)){
+                classFilter.addPrefixes(getTextContent(child).trim());
+            }
+        }
+    }
+
+
 }

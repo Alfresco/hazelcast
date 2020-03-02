@@ -18,6 +18,7 @@ package com.hazelcast.nio;
 
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.logging.Logger;
+import com.hazelcast.patch.ClassLoaderAwareObjectInputStream;
 
 import java.io.*;
 import java.util.Date;
@@ -100,6 +101,7 @@ public class SerializationHelper {
             byte[] buf = new byte[len];
             in.readFully(buf);
             ObjectInputStream oin = AbstractSerializer.newObjectInputStream(new ByteArrayInputStream(buf));
+
             try {
                 return oin.readObject();
             } catch (ClassNotFoundException e) {

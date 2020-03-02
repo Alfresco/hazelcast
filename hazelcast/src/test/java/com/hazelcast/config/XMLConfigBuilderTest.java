@@ -16,6 +16,7 @@
 
 package com.hazelcast.config;
 
+import com.hazelcast.patch.ClassFilter;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.xml.sax.SAXException;
@@ -143,6 +144,40 @@ public class XMLConfigBuilderTest {
             fail(ex.getMessage());
             ex.printStackTrace();
         }
+    }
+
+    @Test
+    public void testJavaSerializationFilter() {
+        String xml = "<hazelcast>"
+                + "  <serialization>\n"
+                + "      <java-serialization-filter>\n"
+                + "          <whitelist>\n"
+                + "              <class>java.lang.String</class>\n"
+                + "              <class>example.Foo</class>\n"
+                + "              <package>com.acme.app</package>\n"
+                + "              <package>com.acme.app.subpkg</package>\n"
+                + "          </whitelist>\n"
+                + "          <blacklist>\n"
+                + "              <class>com.acme.app.BeanComparator</class>\n"
+                + "              <prefix>foo.bar.</prefix>\n"
+                + "          </blacklist>\n"
+                + "      </java-serialization-filter>\n"
+                + "  </serialization>\n"
+                + "</hazelcast>";
+
+        Config config = new InMemoryXmlConfig(xml);
+        JavaSerializationFilterConfig javaSerializationFilterConfig = config.getSerializationConfig().getJavaSerializationFilterConfig();
+        assertNotNull(javaSerializationFilterConfig);
+        ClassFilter blackList = javaSerializationFilterConfig.getBlacklist();
+        assertNotNull(blackList);
+        ClassFilter whiteList = javaSerializationFilterConfig.getWhitelist();
+        assertNotNull(whiteList);
+        assertTrue(whiteList.getClasses().contains("java.lang.String"));
+        assertTrue(whiteList.getClasses().contains("example.Foo"));
+        assertTrue(whiteList.getPackages().contains("com.acme.app"));
+        assertTrue(whiteList.getPackages().contains("com.acme.app.subpkg"));
+        assertTrue(blackList.getClasses().contains("com.acme.app.BeanComparator"));
+        assertTrue(blackList.getPrefixes().contains("foo.bar."));
     }
 
     private void testXSDConfigXML(String xmlResource) throws SAXException, IOException {

@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
-public class TestExternalizableDeserialized implements Externalizable {
+public class TestExternalizable implements Externalizable {
 
     public static volatile boolean isDeserialized = false;
 

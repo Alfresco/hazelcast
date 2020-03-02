@@ -17,7 +17,8 @@
 
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
            xmlns="http://www.hazelcast.com/schema/config"
-           targetNamespace="http://www.hazelcast.com/schema/config">
+           targetNamespace="http://www.hazelcast.com/schema/config"
+           elementFormDefault="qualified">
     <xs:element name="hazelcast">
         <xs:complexType>
             <xs:sequence>
@@ -37,6 +38,7 @@
                 <xs:element ref="merge-policies" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="listeners" minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="security" minOccurs="0" maxOccurs="1"/>
+                <xs:element name="serialization" type="serialization" minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
             <xs:attribute name="id" type="xs:string" use="optional" default="default"/>
         </xs:complexType>
@@ -1178,4 +1180,71 @@
     <xs:element name="executor-service-permission" type="instance-permisson"/>
     <xs:element name="transaction-permission" type="base-permisson"/>
     <xs:element name="all-permissions" type="base-permisson"/>
+
+
+    <xs:complexType name="serialization">
+        <xs:all>
+            <xs:element name="java-serialization-filter" type="java-serialization-filter" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        Basic protection against untrusted deserialization based on class/package blacklisting and whitelisting.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:all>
+    </xs:complexType>
+    <xs:complexType name="java-serialization-filter">
+        <xs:all>
+            <xs:element name="blacklist" type="filter-list" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        Blacklisted classes and packages, which are not allowed to be deserialized.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="whitelist" type="filter-list" minOccurs="0" maxOccurs="1">
+                <xs:annotation>
+                    <xs:documentation>
+                        Whitelisted classes and packages, which are allowed to be deserialized. If the list is empty
+                        (no class or package name provided) then all classes are allowed.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:all>
+        <xs:attribute name="defaults-disabled" use="optional" default="false">
+            <xs:annotation>
+                <xs:documentation>
+                    Disables including default list entries (hardcoded in Hazelcast source code).
+                </xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+                <xs:restriction base="xs:boolean"/>
+            </xs:simpleType>
+        </xs:attribute>
+    </xs:complexType>
+    <xs:complexType name="filter-list">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="class" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>
+                        Name of a class to be included in the list.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="package" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>
+                        Name of a package to be included in the list.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+            <xs:element name="prefix" type="xs:string" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>
+                        Class name prefix to be included in the list.
+                    </xs:documentation>
+                </xs:annotation>
+            </xs:element>
+        </xs:choice>
+    </xs:complexType>
 </xs:schema>

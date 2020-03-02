@@ -2,7 +2,7 @@ package example;
 
 import java.io.Serializable;
 
-public class TestDeserialized implements Serializable {
+public class TestSerializable implements Serializable {
     private static final long serialVersionUID = 1L;
     public static volatile boolean IS_DESERIALIZED = false;
 

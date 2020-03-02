@@ -22,95 +22,49 @@ import com.hazelcast.config.Config;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.nio.HazelcastSerializationException;
-import example.TestDeserialized;
+import example.TestExternalizable;
+import example.TestSerializable;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
+
+import java.util.ArrayList;
 
 import static org.junit.Assert.*;
 
-public class ClientDeserializationProtectionTest extends TestSerializableFilterAware {
+public class ClientDeserializationProtectionTest  {
+    HazelcastInstance hzInst;
 
-
-    /**
-     * <pre>
-     * When: An untrusted serialized object is stored from client and read from member, the default Whitelist is used.
-     * Then: Deserialization fails.
-     * </pre>
-     */
-    @Test
-    public void testDefaultDeserializationFilter_readOnMember () {
-        HazelcastInstance member = Hazelcast.newHazelcastInstance(new Config());
-        HazelcastInstance client = HazelcastClient.newHazelcastClient(new ClientConfig());
-
-        client.getMap("test").put("key", new TestDeserialized());
-        try {
-            member.getMap("test").get("key");
-            fail("Deserialization should have failed");
-        } catch (HazelcastSerializationException e) {
-            assertFalse(TestDeserialized.IS_DESERIALIZED);
-        }
+    @After
+    public void stop () {
+        Hazelcast.shutdownAll();
     }
 
-    /**
-     * <pre>
-     * When: An untrusted serialized object is stored by member and read from client, the default Whitelist is used.
-     * Then: Deserialization fails.
-     * </pre>
-     */
-    @Test
-    public void testDefaultDeserializationFilter_readOnClient() {
-        HazelcastInstance member = Hazelcast.newHazelcastInstance(new Config());
-        HazelcastInstance client = HazelcastClient.newHazelcastClient(new ClientConfig());
-
-        member.getMap("test").put("key", new TestDeserialized());
-        try {
-            client.getMap("test").get("key");
-            fail("Deserialization should have failed");
-        } catch (HazelcastSerializationException e) {
-            assertFalse(TestDeserialized.IS_DESERIALIZED);
-        }
+    @Before
+    public void start () {
+        hzInst = Hazelcast.newHazelcastInstance(new Config().setInstanceName("Instance1"));
     }
 
-    /**
-     * <pre>
-     * When: Default Whitelist is disabled and classname of the test serialized object is blacklisted. The object is read from client.
-     * Then: Deserialization fails.
-     * </pre>
-     */
     @Test
-    public void testClassBlacklisted() throws Exception {
-        disableDefaultWhitelist();
+    public void testFailsOnBlacklistedClass () throws InterruptedException {
 
-        SerializationClassNameFilter classFilter = getFilter();
-        classFilter.getBlacklist().addClasses(TestDeserialized.class.getName());
+        hzInst.getConfig().getSerializationConfig()
+                .getJavaSerializationFilterConfig()
+                .setDefaultsDisabled(true);
 
-        HazelcastInstance member = Hazelcast.newHazelcastInstance(new Config());
-        HazelcastInstance client = HazelcastClient.newHazelcastClient(new ClientConfig());
 
-        member.getMap("test").put("key", new TestDeserialized());
+        HazelcastInstance hzClient = HazelcastClient.newHazelcastClient(new ClientConfig());
+
+
+        hzInst.getMap("test").put("key", new TestSerializable());
         try {
-            client.getMap("test").get("key");
+            hzClient.getMap("test").get("key");
+            hzInst.getMap("test").get("key");
             fail("Deserialization should have failed");
         } catch (HazelcastSerializationException e) {
-            assertFalse(TestDeserialized.IS_DESERIALIZED);
+            assertFalse(TestSerializable.IS_DESERIALIZED);
         }
     }
 
 
-    /**
-     * <pre>
-     * When: Deserialization filtering is enabled and classname of test object is whitelisted.
-     * Then: The deserialization is possible.
-     * </pre>
-     */
-    @Test
-    public void testClassWhitelisted() throws Exception {
-        getFilter().getWhitelist().addClasses(TestDeserialized.class.getName());
-
-        HazelcastInstance member = Hazelcast.newHazelcastInstance(new Config());
-        HazelcastInstance client = HazelcastClient.newHazelcastClient(new ClientConfig());
-
-        member.getMap("test").put("key", new TestDeserialized());
-        client.getMap("test").get("key");
-        assertTrue(TestDeserialized.IS_DESERIALIZED);
-    }
 }

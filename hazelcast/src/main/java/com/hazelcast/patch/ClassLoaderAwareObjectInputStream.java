@@ -1,5 +1,6 @@
 package com.hazelcast.patch;
 
+import com.hazelcast.impl.FactoryImpl;
 import com.hazelcast.impl.ThreadContext;
 import com.hazelcast.nio.AbstractSerializer;
 
@@ -19,13 +20,16 @@ public class ClassLoaderAwareObjectInputStream extends ObjectInputStream {
     protected Class<?> resolveClass (final ObjectStreamClass desc) throws ClassNotFoundException {
         String clazzName = desc.getName();
 
-        SerializationClassNameFilter serializationClassNameFilter = new SerializationClassNameFilter(
-                ThreadContext.get().getCurrentFactory().getConfig()
-                        .getSerializationConfig().getJavaSerializationFilterConfig()
-        );
-        System.out.println("Class to deserialize=" + clazzName + "; ThreadName=" + Thread.currentThread().getName() + "; " + ThreadContext.get().getCurrentFactory().getConfig().getInstanceName());
+        FactoryImpl currentFactory = ThreadContext.get().getCurrentFactory();
 
-        serializationClassNameFilter.filter(clazzName);
+        if(currentFactory != null){
+            SerializationClassNameFilter serializationClassNameFilter = new SerializationClassNameFilter(
+                    currentFactory.getConfig()
+                            .getSerializationConfig().getJavaSerializationFilterConfig()
+            );
+            serializationClassNameFilter.filter(clazzName);
+        }
+
 
         return AbstractSerializer.loadClass(clazzName);
     }

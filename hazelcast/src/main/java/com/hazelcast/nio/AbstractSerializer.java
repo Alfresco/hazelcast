@@ -121,9 +121,6 @@ public abstract class AbstractSerializer {
                 final OutOfMemoryError oom = (OutOfMemoryError) e;
                 OutOfMemoryErrorDispatcher.onOutOfMemory(oom);
                 throw oom;
-            } else if(e instanceof SecurityException) {
-                e.printStackTrace();
-                return null;
             } else {
                 throw new HazelcastSerializationException("Problem when serializing type " + typeId, e);
             }

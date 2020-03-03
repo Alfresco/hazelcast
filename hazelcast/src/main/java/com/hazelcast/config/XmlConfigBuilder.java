@@ -1061,7 +1061,7 @@ public class XmlConfigBuilder extends AbstractXmlConfigHelper implements ConfigB
             if("java-serialization-filter".equals(cleanNodeName(serializationChild.getNodeName()))) {
 
                 final NamedNodeMap atts = serializationChild.getAttributes();
-                final Node defaultsDisabledAttr = atts.getNamedItem("defaultsDisabled");
+                final Node defaultsDisabledAttr = atts.getNamedItem("defaults-disabled");
 
                 final boolean defaultsDisabled = defaultsDisabledAttr != null ? checkTrue(getTextContent(defaultsDisabledAttr).trim()) : false;
 

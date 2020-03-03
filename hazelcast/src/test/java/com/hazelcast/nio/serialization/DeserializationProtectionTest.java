@@ -39,61 +39,66 @@ import static org.junit.Assert.*;
  */
 public class DeserializationProtectionTest {
 
+    HazelcastInstance member;
+    HazelcastInstance member2;
+
     @Before
+    public void start () throws InterruptedException {
+        member = Hazelcast.newHazelcastInstance(new Config().setInstanceName("Member1"));
+        member2 = Hazelcast.newHazelcastInstance(new Config().setInstanceName("Member2"));
+        Thread.sleep(5000);
+    }
+
     @After
-    public void startStop () {
+    public void stop () {
         Hazelcast.shutdownAll();
     }
 
     @Test
     public void testFailsOnBlacklistedClass () {
-        Config config = new Config();
-        config.setInstanceName("Member1");
 
-        config.getSerializationConfig()
+        member.getConfig().getSerializationConfig()
                 .getJavaSerializationFilterConfig()
                 .getBlacklist()
                 .addClasses(TestSerializable.class.getName());
 
-        HazelcastInstance member = Hazelcast.newHazelcastInstance(config);
-
-        HazelcastInstance member2 = Hazelcast.newHazelcastInstance(new Config().setInstanceName("Member2"));
 
         member2.getMap("test").put("key", new TestSerializable());
-        member.getMap("test").get("key");
-        member2.getMap("test").get("key");
-        assertFalse(TestSerializable.IS_DESERIALIZED);
+        try {
+            member.getMap("test").get("key");
+            member2.getMap("test").get("key");
+            fail("Deserialization should have failed");
+        } catch (HazelcastSerializationException e) {
+            assertFalse(TestSerializable.IS_DESERIALIZED);
+        }
     }
 
     @Test
     public void testFailsOnBlacklistedPackage () {
-        Config config = new Config();
 
-        config.getSerializationConfig()
+        member.getConfig().getSerializationConfig()
                 .getJavaSerializationFilterConfig()
                 .getBlacklist()
                 .addClasses(TestSerializable.class.getPackage().getName());
 
-        HazelcastInstance member = Hazelcast.newHazelcastInstance(config);
-        HazelcastInstance member2 = Hazelcast.newHazelcastInstance(new Config());
-
         member2.getMap("test").put("key", new TestSerializable());
-        member.getMap("test").get("key");
-        assertFalse(TestSerializable.IS_DESERIALIZED);
+        try {
+            member.getMap("test").get("key");
+            fail("Deserialization should have failed");
+        } catch (HazelcastSerializationException e) {
+            assertFalse(TestSerializable.IS_DESERIALIZED);
+        }
     }
 
 
     @Test
     public void tesNotFailsOnWhitelistedClass () {
-        Config config = new Config();
 
-        config.getSerializationConfig()
+        member.getConfig().getSerializationConfig()
                 .getJavaSerializationFilterConfig()
                 .getWhitelist()
                 .addClasses(ArrayList.class.getName());
 
-        HazelcastInstance member = Hazelcast.newHazelcastInstance(config);
-        HazelcastInstance member2 = Hazelcast.newHazelcastInstance(new Config());
 
         member2.getMap("test").put("key", new ArrayList<Object>());
         member.getMap("test").get("key");
@@ -102,14 +107,10 @@ public class DeserializationProtectionTest {
 
     @Test
     public void tesDefaultWhitelistDisabled () {
-        Config config = new Config();
 
-        config.getSerializationConfig()
+        member.getConfig().getSerializationConfig()
                 .getJavaSerializationFilterConfig()
                 .setDefaultsDisabled(true);
-
-        HazelcastInstance member = Hazelcast.newHazelcastInstance(config);
-        HazelcastInstance member2 = Hazelcast.newHazelcastInstance(new Config());
 
         member2.getMap("test").put("key", new ArrayList<Object>());
         member.getMap("test").get("key");
@@ -118,15 +119,11 @@ public class DeserializationProtectionTest {
 
     @Test
     public void testPrefixWhitelisted () {
-        Config config = new Config();
 
-        config.getSerializationConfig()
+        member.getConfig().getSerializationConfig()
                 .getJavaSerializationFilterConfig()
                 .getWhitelist()
                 .addPrefixes("example.");
-
-        HazelcastInstance member = Hazelcast.newHazelcastInstance(config);
-        HazelcastInstance member2 = Hazelcast.newHazelcastInstance(new Config());
 
         member2.getMap("test").put("key", new TestSerializable());
         member.getMap("test").get("key");
@@ -135,19 +132,19 @@ public class DeserializationProtectionTest {
 
     @Test
     public void testExternalizableBlackListed () {
-        Config config = new Config();
 
-        config.getSerializationConfig()
+        member.getConfig().getSerializationConfig()
                 .getJavaSerializationFilterConfig()
                 .getBlacklist()
                 .addClasses(TestExternalizable.class.getName());
 
-        HazelcastInstance member = Hazelcast.newHazelcastInstance(config);
-        HazelcastInstance member2 = Hazelcast.newHazelcastInstance(new Config());
-
         member2.getMap("test").put("key", new TestExternalizable());
-        member.getMap("test").get("key");
-        assertFalse(TestExternalizable.isDeserialized);
+        try {
+            member.getMap("test").get("key");
+            fail("Deserialization should have failed");
+        } catch (HazelcastSerializationException e) {
+            assertFalse(TestExternalizable.isDeserialized);
+        }
     }
 
 }

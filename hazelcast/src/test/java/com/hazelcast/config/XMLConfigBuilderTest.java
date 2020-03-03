@@ -150,7 +150,7 @@ public class XMLConfigBuilderTest {
     public void testJavaSerializationFilter() {
         String xml = "<hazelcast>"
                 + "  <serialization>\n"
-                + "      <java-serialization-filter>\n"
+                + "      <java-serialization-filter defaults-disabled=\"true\">\n"
                 + "          <whitelist>\n"
                 + "              <class>java.lang.String</class>\n"
                 + "              <class>example.Foo</class>\n"
@@ -167,6 +167,8 @@ public class XMLConfigBuilderTest {
 
         Config config = new InMemoryXmlConfig(xml);
         JavaSerializationFilterConfig javaSerializationFilterConfig = config.getSerializationConfig().getJavaSerializationFilterConfig();
+
+        assertTrue(javaSerializationFilterConfig.isDefaultsDisabled());
         assertNotNull(javaSerializationFilterConfig);
         ClassFilter blackList = javaSerializationFilterConfig.getBlacklist();
         assertNotNull(blackList);

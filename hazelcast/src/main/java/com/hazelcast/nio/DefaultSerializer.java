@@ -17,6 +17,7 @@
 package com.hazelcast.nio;
 
 import com.hazelcast.config.JavaSerializationFilterConfig;
+import com.hazelcast.impl.FactoryImpl;
 import com.hazelcast.impl.GroupProperties;
 import com.hazelcast.impl.ThreadContext;
 import com.hazelcast.patch.ClassLoaderAwareObjectInputStream;
@@ -350,12 +351,16 @@ public class DefaultSerializer implements CustomSerializer {
 
             final String className = bbis.readUTF();
 
-            JavaSerializationFilterConfig javaSerializationFilterConfig = ThreadContext.get()
-                    .getCurrentFactory()
-                    .getConfig()
-                    .getSerializationConfig()
-                    .getJavaSerializationFilterConfig();
-            new SerializationClassNameFilter(javaSerializationFilterConfig).filter(className);
+            FactoryImpl currentFactory = ThreadContext.get().getCurrentFactory();
+
+            if(currentFactory != null){
+                JavaSerializationFilterConfig javaSerializationFilterConfig = currentFactory
+                        .getConfig()
+                        .getSerializationConfig()
+                        .getJavaSerializationFilterConfig();
+                new SerializationClassNameFilter(javaSerializationFilterConfig).filter(className);
+            }
+
 
             try {
                 final Externalizable ds = (Externalizable) newInstance(AbstractSerializer.loadClass(className));

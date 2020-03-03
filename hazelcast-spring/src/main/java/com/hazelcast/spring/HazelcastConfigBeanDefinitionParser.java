@@ -18,6 +18,7 @@ package com.hazelcast.spring;
 
 import com.hazelcast.config.*;
 import com.hazelcast.config.PermissionConfig.PermissionType;
+import com.hazelcast.patch.ClassFilter;
 import com.hazelcast.spring.context.SpringManagedContext;
 import org.springframework.beans.factory.support.*;
 import org.springframework.beans.factory.xml.ParserContext;
@@ -179,6 +180,8 @@ public class HazelcastConfigBeanDefinitionParser extends AbstractHazelcastBeanDe
                     configBuilder.addPropertyValue(xmlToJavaName(nodeName), getValue(node));
                 } else if ("management-center".equals(nodeName)) {
                     handleManagementCenter(node);
+                }else if("serialization".equals(nodeName)){
+                    handleSerialization(node);
                 }
             }
         }
@@ -782,5 +785,68 @@ public class HazelcastConfigBeanDefinitionParser extends AbstractHazelcastBeanDe
             }
             return listeners;
         }
+
+        private void handleSerialization (final org.w3c.dom.Node serializationNode)  {
+
+            BeanDefinitionBuilder serializationConfigBeanBuilder = createBeanBuilder(SerializationConfig.class);
+
+            BeanDefinitionBuilder javaSerialFilterConfigBuilder = createBeanBuilder(JavaSerializationFilterConfig.class);
+
+            for (org.w3c.dom.Node serializationChild : new IterableNodeList(serializationNode.getChildNodes())) {
+
+                if("java-serialization-filter".equals(cleanNodeName(serializationChild.getNodeName()))) {
+
+//                    fillAttributeValues(serializationChild, javaSerialFilterConfigBuilder);
+
+                    final NamedNodeMap atts = serializationChild.getAttributes();
+                    final Node defaultsDisabledAttr = atts.getNamedItem("defaults-disabled");
+                    final boolean defaultsDisabled = defaultsDisabledAttr != null ? checkTrue(getTextContent(defaultsDisabledAttr).trim()) : false;
+
+                    javaSerialFilterConfigBuilder.addPropertyValue("defaultsDisabled", defaultsDisabled);
+
+                    for (org.w3c.dom.Node child : new IterableNodeList(serializationChild.getChildNodes())) {
+                        final String nodeName = cleanNodeName(child.getNodeName());
+                        if("blacklist".equals(nodeName)) {
+                            BeanDefinitionBuilder blackList = createBeanBuilder(ClassFilter.class);
+                            handleBlackWhiteList(blackList, child);
+                            javaSerialFilterConfigBuilder.addPropertyValue("blacklist", blackList.getBeanDefinition());
+                        } else if("whitelist".equals(nodeName)) {
+                            BeanDefinitionBuilder whitelist = createBeanBuilder(ClassFilter.class);
+                            handleBlackWhiteList(whitelist, child);
+                            javaSerialFilterConfigBuilder.addPropertyValue("whitelist", whitelist.getBeanDefinition());
+                        }
+                    }
+                }
+            }
+
+            serializationConfigBeanBuilder.addPropertyValue("javaSerializationFilterConfig", javaSerialFilterConfigBuilder.getBeanDefinition());
+            configBuilder.addPropertyValue("serializationConfig", serializationConfigBeanBuilder.getBeanDefinition());
+        }
+
+        private void handleBlackWhiteList (BeanDefinitionBuilder blackWhiteList, Node blackWhitelistNode) {
+
+            ManagedList<String> classList = new ManagedList<String>();
+            ManagedList<String> packageList = new ManagedList<String>();
+            ManagedList<String> prefixList = new ManagedList<String>();
+
+            for (org.w3c.dom.Node child : new IterableNodeList(blackWhitelistNode.getChildNodes())) {
+                final String childNodeName = cleanNodeName(child.getNodeName());
+
+                if("class".equals(childNodeName)){
+                    classList.add(getTextContent(child).trim());
+                }
+                if("package".equals(childNodeName)){
+                    packageList.add(getTextContent(child).trim());
+                }
+                if("prefix".equals(childNodeName)){
+                    prefixList.add(getTextContent(child).trim());
+                }
+            }
+            blackWhiteList.addConstructorArgValue(classList);
+            blackWhiteList.addConstructorArgValue(packageList);
+            blackWhiteList.addConstructorArgValue(prefixList);
+        }
     }
+
+
 }

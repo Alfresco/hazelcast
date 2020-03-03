@@ -328,9 +328,11 @@ public class ConfigXmlGenerator {
             }
             xml.append("</listeners>");
         }
+        appendSerializationSection(xml,config.getSerializationConfig());
+
         xml.append("</hazelcast>");
 
-        appendSerializationSection(xml,config.getSerializationConfig());
+
 
         return format(xml.toString(), 5);
     }

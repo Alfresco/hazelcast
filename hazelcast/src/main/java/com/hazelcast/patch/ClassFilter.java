@@ -4,10 +4,7 @@ package com.hazelcast.patch;
 import com.hazelcast.logging.ILogger;
 import com.hazelcast.logging.Logger;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
@@ -28,7 +25,26 @@ public class ClassFilter {
 
     private AtomicBoolean warningLogged = new AtomicBoolean();
 
+    public ClassFilter () {
+    }
 
+    /**
+     * Used by spring bean definition builder
+     * @param classes
+     * @param packages
+     * @param prefixes
+     */
+    public ClassFilter (List<String> classes, List<String> packages, List<String> prefixes) {
+        if(classes != null){
+            addClasses(classes.toArray(new String[0]));
+        }
+        if(classes != null){
+            addPackages(packages.toArray(new String[0]));
+        }
+        if(prefixes != null){
+            addPrefixes(packages.toArray(new String[0]));
+        }
+    }
 
     /**
      * Returns unmodifiable set of class names.

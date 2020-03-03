@@ -463,4 +463,22 @@ public class TestFullApplicationContext {
         assertEquals("myserver:80", managementCenterConfig.getUrl());
         assertEquals(4, managementCenterConfig.getUpdateInterval());
     }
+
+    @Test
+    public void testSerializationConfig() {
+        SerializationConfig serializationConfig = config.getSerializationConfig();
+        assertNotNull(serializationConfig);
+        JavaSerializationFilterConfig javaSerializationFilterConfig = serializationConfig.getJavaSerializationFilterConfig();
+
+        assertNotNull(javaSerializationFilterConfig);
+        assertTrue(javaSerializationFilterConfig.isDefaultsDisabled());
+        assertNotNull(javaSerializationFilterConfig.getBlacklist());
+        assertNotNull(javaSerializationFilterConfig.getWhitelist());
+        assertFalse(javaSerializationFilterConfig.getWhitelist().getPrefixes().isEmpty());
+        assertFalse(javaSerializationFilterConfig.getBlacklist().getPrefixes().isEmpty());
+        assertFalse(javaSerializationFilterConfig.getWhitelist().getClasses().isEmpty());
+        assertFalse(javaSerializationFilterConfig.getBlacklist().getClasses().isEmpty());
+        assertFalse(javaSerializationFilterConfig.getWhitelist().getPackages().isEmpty());
+        assertFalse(javaSerializationFilterConfig.getBlacklist().getPackages().isEmpty());
+    }
 }

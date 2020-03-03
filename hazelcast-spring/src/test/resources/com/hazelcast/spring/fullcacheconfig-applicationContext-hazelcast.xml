@@ -209,6 +209,21 @@
                 <hz:listener implementation="dummyMembershipListener"/>
             </hz:listeners>
 
+            <hz:serialization>
+                <hz:java-serialization-filter defaults-disabled="true">
+                    <hz:blacklist>
+                        <hz:prefix>blackprefix.</hz:prefix>
+                        <hz:package>blackpackage</hz:package>
+                        <hz:class>blackpackage.BlackClass</hz:class>
+                    </hz:blacklist>
+                    <hz:whitelist>
+                        <hz:prefix>whiteprefix.</hz:prefix>
+                        <hz:package>whitepackage</hz:package>
+                        <hz:class>whitepackage.WhiteClass</hz:class>
+                    </hz:whitelist>
+                </hz:java-serialization-filter>
+            </hz:serialization>
+
         </hz:config>
     </hz:hazelcast>
 

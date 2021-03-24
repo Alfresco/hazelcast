@@ -38,11 +38,11 @@ public class ClassFilter {
         if(classes != null){
             addClasses(classes.toArray(new String[0]));
         }
-        if(classes != null){
+        if(packages != null){
             addPackages(packages.toArray(new String[0]));
         }
         if(prefixes != null){
-            addPrefixes(packages.toArray(new String[0]));
+            addPrefixes(prefixes.toArray(new String[0]));
         }
     }
 

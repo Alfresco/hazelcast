@@ -25,6 +25,7 @@ import com.hazelcast.impl.wan.WanReplicationEndpoint;
 import com.hazelcast.merge.MergePolicy;
 import com.hazelcast.nio.SocketInterceptor;
 import com.hazelcast.nio.ssl.SSLContextFactory;
+import com.hazelcast.patch.ClassFilter;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -464,6 +465,18 @@ public class TestFullApplicationContext {
         assertEquals(4, managementCenterConfig.getUpdateInterval());
     }
 
+    // Configuration used in testing is in fullcacheconfig-applicationContext-hazelcast.xml
+    //                     <hz:blacklist>
+    //                        <hz:prefix>blackprefix.</hz:prefix>
+    //                        <hz:package>blackpackage</hz:package>
+    //                        <hz:class>blackpackage.BlackClass</hz:class>
+    //                    </hz:blacklist>
+    //                    <hz:whitelist>
+    //                        <hz:prefix>whiteprefix.</hz:prefix>
+    //                        <hz:package>whitepackage</hz:package>
+    //                        <hz:class>whitepackage.WhiteClass</hz:class>
+    //                    </hz:whitelist>
+
     @Test
     public void testSerializationConfig() {
         SerializationConfig serializationConfig = config.getSerializationConfig();
@@ -472,13 +485,26 @@ public class TestFullApplicationContext {
 
         assertNotNull(javaSerializationFilterConfig);
         assertTrue(javaSerializationFilterConfig.isDefaultsDisabled());
+
         assertNotNull(javaSerializationFilterConfig.getBlacklist());
         assertNotNull(javaSerializationFilterConfig.getWhitelist());
-        assertFalse(javaSerializationFilterConfig.getWhitelist().getPrefixes().isEmpty());
-        assertFalse(javaSerializationFilterConfig.getBlacklist().getPrefixes().isEmpty());
-        assertFalse(javaSerializationFilterConfig.getWhitelist().getClasses().isEmpty());
-        assertFalse(javaSerializationFilterConfig.getBlacklist().getClasses().isEmpty());
-        assertFalse(javaSerializationFilterConfig.getWhitelist().getPackages().isEmpty());
-        assertFalse(javaSerializationFilterConfig.getBlacklist().getPackages().isEmpty());
+
+        ClassFilter blackList = javaSerializationFilterConfig.getBlacklist();
+        ClassFilter whiteList = javaSerializationFilterConfig.getWhitelist();
+
+        assertEquals(1, whiteList.getClasses().size());
+        assertTrue(whiteList.getClasses().contains("whitepackage.WhiteClass"));
+        assertEquals(1, blackList.getClasses().size());
+        assertTrue(blackList.getClasses().contains("blackpackage.BlackClass"));
+
+        assertEquals(1, whiteList.getPackages().size());
+        assertTrue(whiteList.getPackages().contains("whitepackage"));
+        assertEquals(1, blackList.getPackages().size());
+        assertTrue(blackList.getPackages().contains("blackpackage"));
+
+        assertEquals(1, whiteList.getPrefixes().size());
+        assertTrue(whiteList.getPrefixes().contains("whiteprefix."));
+        assertEquals(1, blackList.getPrefixes().size());
+        assertTrue(blackList.getPrefixes().contains("blackprefix."));
     }
 }
